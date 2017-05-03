@@ -1,0 +1,7 @@
+applications:
+- name: billing
+  no-route: true
+  health-check-type: process
+  buildpack: python_buildpack
+  command: python diego.py
+  memory: 256M
