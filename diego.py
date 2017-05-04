@@ -6,6 +6,7 @@ import datetime
 
 import elasticsearch
 import elasticsearch.helpers
+import dateutil.relativedelta
 
 logging.basicConfig(level=logging.INFO)
 
@@ -39,9 +40,7 @@ query = {
 }
 
 
-def summarize(client, out_index, doc_type):
-    date = datetime.date.today()
-    date = date.replace(month=date.month - 1, day=1)
+def summarize(client, date, out_index, doc_type):
     in_index = 'logs-app-{}.*'.format(date.strftime('%Y.%m'))
     res = client.search(index=in_index, body=query)
     elasticsearch.helpers.bulk(
@@ -65,6 +64,19 @@ def get_bulk_docs(res, date):
         yield doc
 
 
+def get_date(value):
+    if value:
+        year, month = value.split('-')
+        return datetime.datetime(int(year), int(month), 1)
+    today = datetime.date.today()
+    return today.replace(day=1) - dateutil.relativedelta.relativedelta(months=1)
+
+
 if __name__ == '__main__':
     client = elasticsearch.Elasticsearch([os.environ['ES_URI']])
-    summarize(client, os.environ['BILL_INDEX'], os.environ['DOC_TYPE'])
+    summarize(
+        client,
+        get_date(os.getenv('DATE')),
+        os.environ['BILL_INDEX'],
+        os.environ['DOC_TYPE'],
+    )
