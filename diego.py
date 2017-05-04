@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 
 import os
-import time
 import logging
 import datetime
 
-import requests
-import schedule
 import elasticsearch
 import elasticsearch.helpers
 
@@ -44,33 +41,15 @@ query = {
 
 def summarize(client, out_index, doc_type):
     date = datetime.date.today()
-    date = date.replace(month=date.month - 1)
-    if date.day == 1:
-        try:
-            in_index = 'logs-app-{}.*'.format(date.strftime('%Y.%m'))
-            res = client.search(index=in_index, body=query)
-            elasticsearch.helpers.bulk(
-                client,
-                get_bulk_docs(res, date),
-                index=out_index,
-                doc_type=doc_type,
-            )
-        except Exception:
-            notify_slack('Failed to aggregate Diego metrics')
-            raise
-        notify_slack('Successfully aggregated Diego metrics')
-
-
-def notify_slack(text):
-    requests.post(
-        os.environ['SLACK_URL'],
-        json={
-            'username': os.environ['SLACK_USERNAME'],
-            'channel': os.environ['SLACK_CHANNEL'],
-            'icon_url': os.environ['SLACK_ICON_URL'],
-            'text': text,
-        },
-    ).raise_for_status()
+    date = date.replace(month=date.month - 1, day=1)
+    in_index = 'logs-app-{}.*'.format(date.strftime('%Y.%m'))
+    res = client.search(index=in_index, body=query)
+    elasticsearch.helpers.bulk(
+        client,
+        get_bulk_docs(res, date),
+        index=out_index,
+        doc_type=doc_type,
+    )
 
 
 def get_bulk_docs(res, date):
@@ -88,11 +67,4 @@ def get_bulk_docs(res, date):
 
 if __name__ == '__main__':
     client = elasticsearch.Elasticsearch([os.environ['ES_URI']])
-    index = os.environ['BILL_INDEX']
-    doc_type = os.environ['DOC_TYPE']
-
-    schedule.every().day.do(summarize, client, index, doc_type)
-
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+    summarize(client, os.environ['BILL_INDEX'], os.environ['DOC_TYPE'])
