@@ -31,6 +31,40 @@ jobs:
       username: {{slack-username}}
       icon_url: {{slack-icon-url}}
 
+- name: run-quotas-staging
+  plan:
+  - aggregate:
+    - get: quotas-schedule
+      trigger: true
+    - get: billing-src
+  - task: run-quotas
+    file: billing-src/quotas.yml
+    params:
+      ES_URI: {{es-uri-staging}}
+      CF_API_URL: {{cf-api-url-staging}}
+      CF_CLIENT_ID: {{cf-client-id-staging}}
+      CF_CLIENT_SECRET: {{cf-client-secret-staging}}
+      QUOTA_INDEX: {{quotas-index-staging}}
+      DOC_TYPE: {{doc-type-staging}}
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: FAILED to run quotas billing on staging
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: {{slack-channel}}
+      username: {{slack-username}}
+      icon_url: {{slack-icon-url}}
+  on_success:
+    put: slack
+    params:
+      text: |
+        :x: Ran quotas billing on staging
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: {{slack-channel}}
+      username: {{slack-username}}
+      icon_url: {{slack-icon-url}}
+
 - name: test-billing-diego-staging
   plan:
   - get: billing-src
@@ -94,6 +128,40 @@ jobs:
       username: {{slack-username}}
       icon_url: {{slack-icon-url}}
 
+- name: run-quotas-production
+  plan:
+  - aggregate:
+    - get: quotas-schedule
+      trigger: true
+    - get: billing-src
+  - task: run-quotas
+    file: billing-src/quotas.yml
+    params:
+      ES_URI: {{es-uri-production}}
+      CF_API_URL: {{cf-api-url-production}}
+      CF_CLIENT_ID: {{cf-client-id-production}}
+      CF_CLIENT_SECRET: {{cf-client-secret-production}}
+      QUOTA_INDEX: {{quotas-index-production}}
+      DOC_TYPE: {{doc-type-production}}
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: FAILED to run quotas billing on production
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: {{slack-channel}}
+      username: {{slack-username}}
+      icon_url: {{slack-icon-url}}
+  on_success:
+    put: slack
+    params:
+      text: |
+        :x: Ran quotas billing on production
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: {{slack-channel}}
+      username: {{slack-username}}
+      icon_url: {{slack-icon-url}}
+
 - name: test-billing-diego-production
   plan:
   - get: billing-src
@@ -131,6 +199,12 @@ resources:
   source:
     expression: {{diego-schedule-expression}}
     location: {{diego-schedule-location}}
+
+- name: quotas-schedule
+  type: cron-resource
+  source:
+    expression: {{quotas-schedule-expression}}
+    location: {{quotas-schedule-location}}
 
 - name: billing-src
   type: git
