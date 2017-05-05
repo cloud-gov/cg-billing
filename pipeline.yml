@@ -31,6 +31,37 @@ jobs:
       username: {{slack-username}}
       icon_url: {{slack-icon-url}}
 
+- name: test-billing-diego-staging
+  plan:
+  - get: billing-src
+    trigger: true
+  - task: test-diego
+    file: billing-src/test-diego.yml
+    params:
+      ES_URI: {{es-uri-staging}}
+      DOC_TYPE: {{doc-type-staging}}
+      CF_API_URL: {{cf-api-url-staging}}
+      CF_USERNAME: {{cf-username-staging}}
+      CF_PASSWORD: {{cf-password-staging}}
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: FAILED to verify diego billing on staging
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: {{slack-channel}}
+      username: {{slack-username}}
+      icon_url: {{slack-icon-url}}
+  on_success:
+    put: slack
+    params:
+      text: |
+        :x: Verified diego billing on staging
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: {{slack-channel}}
+      username: {{slack-username}}
+      icon_url: {{slack-icon-url}}
+
 - name: run-billing-diego-production
   plan:
   - aggregate:
@@ -58,6 +89,37 @@ jobs:
     params:
       text: |
         :x: Ran diego billing on production
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: {{slack-channel}}
+      username: {{slack-username}}
+      icon_url: {{slack-icon-url}}
+
+- name: test-billing-diego-production
+  plan:
+  - get: billing-src
+    trigger: true
+  - task: test-diego
+    file: billing-src/test-diego.yml
+    params:
+      ES_URI: {{es-uri-production}}
+      DOC_TYPE: {{doc-type-production}}
+      CF_API_URL: {{cf-api-url-production}}
+      CF_USERNAME: {{cf-username-production}}
+      CF_PASSWORD: {{cf-password-production}}
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: FAILED to verify diego billing on production
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: {{slack-channel}}
+      username: {{slack-username}}
+      icon_url: {{slack-icon-url}}
+  on_success:
+    put: slack
+    params:
+      text: |
+        :x: Verified diego billing on production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       channel: {{slack-channel}}
       username: {{slack-username}}
