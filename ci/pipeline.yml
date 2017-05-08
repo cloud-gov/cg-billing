@@ -3,9 +3,10 @@ jobs:
 - name: run-billing-diego-staging
   plan:
   - aggregate:
+    - get: billing-src
+      trigger: true
     - get: diego-schedule
       trigger: true
-    - get: billing-src
   - task: run-billing-diego
     file: billing-src/diego.yml
     params:
@@ -34,6 +35,9 @@ jobs:
 - name: test-billing-diego-staging
   plan:
   - get: billing-src
+    passed: [run-billing-diego-staging]
+    trigger: true
+  - get: diego-test-schedule
     trigger: true
   - task: test-diego
     file: billing-src/test-diego.yml
@@ -65,10 +69,12 @@ jobs:
 - name: run-billing-diego-production
   plan:
   - aggregate:
+    - get: billing-src
+      passed: [test-billing-diego-staging]
+      trigger: true
     - get: diego-schedule
       passed: [run-billing-diego-staging]
       trigger: true
-    - get: billing-src
   - task: run-billing-diego
     file: billing-src/diego.yml
     params:
@@ -97,6 +103,9 @@ jobs:
 - name: test-billing-diego-production
   plan:
   - get: billing-src
+    passed: [run-billing-diego-production]
+    trigger: true
+  - get: diego-test-schedule
     trigger: true
   - task: test-diego
     file: billing-src/test-diego.yml
@@ -131,6 +140,12 @@ resources:
   source:
     expression: {{diego-schedule-expression}}
     location: {{diego-schedule-location}}
+
+- name: diego-test-schedule
+  type: cron-resource
+  source:
+    expression: {{diego-test-schedule-expression}}
+    location: {{diego-test-schedule-location}}
 
 - name: billing-src
   type: git
