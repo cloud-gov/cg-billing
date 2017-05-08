@@ -1,12 +1,24 @@
 #!/usr/bin/env python
 
-import os
-import logging
 import datetime
+import logging
+import os
 
 import elasticsearch
 import elasticsearch.helpers
-import dateutil.relativedelta
+import marshmallow as ma
+
+
+class Config(ma.Schema):
+    es_uri = ma.fields.Str(load_from='ES_URI', required=True)
+    date = ma.fields.DateTime(
+        load_from='DATE',
+        format="%Y-%m",
+        missing=datetime.datetime.now().strftime('%Y-%m'),
+    )
+    bill_index = ma.fields.Str(load_from='BILL_INDEX', required=True)
+    doc_type = ma.fields.Str(load_from='DOC_TYPE', required=True)
+
 
 logging.basicConfig(level=logging.INFO)
 
@@ -90,40 +102,24 @@ def get_bulk_docs(res, date):
         yield doc
 
 
-def get_date(value=None):
-    """Return a datetime object for the first day of the current month
-    or the year/month specified in `value`
-
-    Args:
-        value(str): "YYYY-MM" specifiying the year and month
-
-    Returns:
-        datetime.datetime
-    """
-    if value:
-        year, month = value.split('-')
-        return datetime.datetime(int(year), int(month), 1)
-    today = datetime.date.today()
-    return today.replace(day=1) - dateutil.relativedelta.relativedelta(months=1)
-
-
 if __name__ == '__main__':
-    es_uri = os.environ.get('ES_URI')
-    bill_index = os.environ.get('BILL_INDEX')
-    doc_type = os.environ.get('DOC_TYPE')
+    config, errors = Config().load(os.environ)
+    if errors:
+        print("The following environment variables must be set correctly to continue:")
 
-    if es_uri is None or bill_index is None or doc_type is None:
-        print("The following environment variables must be set to continue:")
-        print("\tES_URI - A URI to an elasticsearch instance")
-        print("\tBILL_INDEX - The name of the index to store results in")
-        print("\tDOC_TYPE - The document type used in BILL_INDEX")
+        for what, err in errors.items():
+            print("\t{0}: {1}".format(what, " ".join(err)))
 
         raise SystemExit(99)
 
-    client = elasticsearch.Elasticsearch([es_uri])
+    print("Running with the following configuration:")
+    for kk, vv in config.items():
+        print("\t{0}: {1}".format(kk, vv))
+
+    client = elasticsearch.Elasticsearch([config['es_uri']])
     summarize(
         client,
-        get_date(os.environ.get('DATE')),
-        bill_index,
-        doc_type,
+        config['date'],
+        config['bill_index'],
+        config['doc_type'],
     )
