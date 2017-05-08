@@ -41,6 +41,22 @@ query = {
 
 
 def summarize(client, date, out_index, doc_type):
+    """Perform aggreegate queries against a month of logsearch-for-cloudfoundry
+    indexes and store the results in a another index.
+
+    Args:
+        client(elasticsearch.Elasticsearch): A configured elasticsearch client
+        date(datetime.datetime): What year / month to query
+        out_index(str): The index to store results in
+        doc_type(str): The document type to store results in
+
+    Returns:
+        None
+
+    Raises:
+        http://elasticsearch-py.readthedocs.io/en/master/exceptions.html
+
+    """
     in_index = 'logs-app-{}.*'.format(date.strftime('%Y.%m'))
     res = client.search(index=in_index, body=query, request_timeout=300)
     elasticsearch.helpers.bulk(
@@ -52,6 +68,16 @@ def summarize(client, date, out_index, doc_type):
 
 
 def get_bulk_docs(res, date):
+    """A generator that returns formatted documents suitable for bulk indexing
+
+    Args:
+        res: Results from an es search
+        date: What year / month the results are for
+
+    Yields:
+        dict: A document to store
+
+    """
     for org in res['aggregations']['org']['buckets']:
         doc = {
             '_id': '{}-{}'.format(date.strftime('%Y-%m'), org['key']),
@@ -64,7 +90,16 @@ def get_bulk_docs(res, date):
         yield doc
 
 
-def get_date(value):
+def get_date(value=None):
+    """Return a datetime object for the first day of the current month
+    or the year/month specified in `value`
+
+    Args:
+        value(str): "YYYY-MM" specifiying the year and month
+
+    Returns:
+        datetime.datetime
+    """
     if value:
         year, month = value.split('-')
         return datetime.datetime(int(year), int(month), 1)
@@ -73,10 +108,22 @@ def get_date(value):
 
 
 if __name__ == '__main__':
-    client = elasticsearch.Elasticsearch([os.environ['ES_URI']])
+    es_uri = os.environ.get('ES_URI')
+    bill_index = os.environ.get('BILL_INDEX')
+    doc_type = os.environ.get('DOC_TYPE')
+
+    if es_uri is None or bill_index is None or doc_type is None:
+        print("The following environment variables must be set to continue:")
+        print("\tES_URI - A URI to an elasticsearch instance")
+        print("\tBILL_INDEX - The name of the index to store results in")
+        print("\tDOC_TYPE - The document type used in BILL_INDEX")
+
+        raise SystemExit(99)
+
+    client = elasticsearch.Elasticsearch([es_uri])
     summarize(
         client,
-        get_date(os.getenv('DATE')),
-        os.environ['BILL_INDEX'],
-        os.environ['DOC_TYPE'],
+        get_date(os.environ.get('DATE')),
+        bill_index,
+        doc_type,
     )
