@@ -42,7 +42,7 @@ query = {
 
 def summarize(client, date, out_index, doc_type):
     in_index = 'logs-app-{}.*'.format(date.strftime('%Y.%m'))
-    res = client.search(index=in_index, body=query)
+    res = client.search(index=in_index, body=query, request_timeout=300)
     elasticsearch.helpers.bulk(
         client,
         get_bulk_docs(res, date),
