@@ -13,6 +13,10 @@ jobs:
       ES_URI: {{es-uri-staging}}
       BILL_INDEX: {{bill-index-staging}}
       DOC_TYPE: {{doc-type-staging}}
+      OUT_DIR: diego-json
+  - put: diego-json-staging
+    params:
+      file: diego-json/diego-*.json
   on_failure:
     put: slack
     params:
@@ -81,6 +85,10 @@ jobs:
       ES_URI: {{es-uri-production}}
       BILL_INDEX: {{bill-index-production}}
       DOC_TYPE: {{doc-type-production}}
+      OUT_DIR: diego-json
+  - put: diego-json-production
+    params:
+      file: diego-json/diego-*.json
   on_failure:
     put: slack
     params:
@@ -158,6 +166,20 @@ resources:
   source:
     url: {{slack-webhook-url}}
 
+- name: diego-json-staging
+  type: s3-iam
+  source:
+    bucket: {{s3-bucket-staging}}
+    region_name: {{aws-region-staging}}
+    regexp: diego-(.*).json
+
+- name: diego-json-production
+  type: s3-iam
+  source:
+    bucket: {{s3-bucket-production}}
+    region_name: {{aws-region-production}}
+    regexp: diego-(.*).json
+
 resource_types:
 - name: cron-resource
   type: docker-image
@@ -168,3 +190,8 @@ resource_types:
   type: docker-image
   source:
     repository: cfcommunity/slack-notification-resource
+
+- name: s3-iam
+  type: docker-image
+  source:
+    repository: 18fgsa/s3-resource
