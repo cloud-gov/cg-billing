@@ -9,6 +9,8 @@ image_resource:
 
 inputs:
 - name: billing-src
+outputs:
+- name: diego-json
 
 run:
   path: billing-src/diego.sh

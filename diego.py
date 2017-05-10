@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-import datetime
-import logging
 import os
+import json
+import logging
+import datetime
 
 import elasticsearch
 import elasticsearch.helpers
@@ -18,6 +19,7 @@ class Config(ma.Schema):
     )
     bill_index = ma.fields.Str(load_from='BILL_INDEX', required=True)
     doc_type = ma.fields.Str(load_from='DOC_TYPE', required=True)
+    out_dir = ma.fields.Str(load_from='OUT_DIR', missing=os.getcwd())
 
 
 logging.basicConfig(level=logging.INFO)
@@ -52,7 +54,7 @@ query = {
 }
 
 
-def summarize(client, date, out_index, doc_type):
+def summarize(client, date, out_index, doc_type, out_dir):
     """Perform aggreegate queries against a month of logsearch-for-cloudfoundry
     indexes and store the results in a another index.
 
@@ -61,6 +63,7 @@ def summarize(client, date, out_index, doc_type):
         date(datetime.datetime): What year / month to query
         out_index(str): The index to store results in
         doc_type(str): The document type to store results in
+        out_dir(str): The output directory to write results to
 
     Returns:
         None
@@ -71,12 +74,18 @@ def summarize(client, date, out_index, doc_type):
     """
     in_index = 'logs-app-{}.*'.format(date.strftime('%Y.%m'))
     res = client.search(index=in_index, body=query, request_timeout=300)
+    docs = list(get_bulk_docs(res, date))
+
     elasticsearch.helpers.bulk(
         client,
-        get_bulk_docs(res, date),
+        docs,
         index=out_index,
         doc_type=doc_type,
     )
+
+    path = os.path.join(out_dir, 'diego-{}.json'.format(date.strftime('%Y-%m')))
+    with open(path, 'w') as fp:
+        json.dump(docs, fp, cls=Encoder)
 
 
 def get_bulk_docs(res, date):
@@ -102,6 +111,13 @@ def get_bulk_docs(res, date):
         yield doc
 
 
+class Encoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime.date):
+            return obj.isoformat()
+        return json.JSONEncoder.default(self, obj)
+
+
 if __name__ == '__main__':
     config, errors = Config().load(os.environ)
     if errors:
@@ -122,4 +138,5 @@ if __name__ == '__main__':
         config['date'],
         config['bill_index'],
         config['doc_type'],
+        config['out_dir'],
     )
