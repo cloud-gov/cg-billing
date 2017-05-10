@@ -83,7 +83,7 @@ def summarize(client, date, out_index, doc_type, out_dir):
         doc_type=doc_type,
     )
 
-    path = os.path.join(out_dir, 'diego-{}.json'.format(date.strftime('%Y-%m')))
+    path = os.path.join(out_dir, 'diego-{}.json'.format(date.strftime('%Y%m')))
     with open(path, 'w') as fp:
         json.dump(docs, fp, cls=Encoder)
 
