@@ -32,10 +32,25 @@ cf delete-org -f "${org}"
 
 sleep 300
 
-DATE="$(date +%Y-%m)" BILL_INDEX="${index}" python3 "${billing_path}/diego.py"
-
 doc_id="$(date +%Y-%m)-${guid}"
-doc=$(curl "${ES_URI}/${index}/${DOC_TYPE}/${doc_id}")
+
+elapsed=600
+until [ "${elapsed}" -le 0 ]; do
+  DATE="$(date +%Y-%m)" BILL_INDEX="${index}" python3 "${billing_path}/diego.py"
+  doc=$(curl "${ES_URI}/${index}/${DOC_TYPE}/${doc_id}")
+  found=$(echo "${doc}" | jq -r '.found')
+  if [[ "${found}" = "true" ]]; then
+    break
+  fi
+  let elapsed-=60
+  sleep 60
+done
+
+found=$(echo "${doc}" | jq -r '.found')
+if [[ "${found}" = "false" ]]; then
+  echo "Aggregate document with _id ${doc_id} not found"
+  exit 1
+fi
 
 expected=$(( 5 * 4 * 1024 * 1024 * 128 ))  # 5 minutes * 4 metrics / minute * 1024 bytes / kb * 1024 kb / mb * 128 mb
 observed=$(echo "${doc}" | jq -r '._source.memory_bytes_quota' | awk '{printf "%.0f", $1}')
