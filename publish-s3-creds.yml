@@ -1,0 +1,14 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: 18fgsa/concourse-task
+
+inputs:
+- name: billing-src
+- name: terraform-yaml
+
+run:
+  path: billing-src/publish-s3-creds.sh

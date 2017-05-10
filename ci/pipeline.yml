@@ -142,6 +142,44 @@ jobs:
       username: {{slack-username}}
       icon_url: {{slack-icon-url}}
 
+- name: publish-s3-creds
+  plan:
+  - get: billing-src
+  - get: terraform-yaml
+    trigger: true
+  - aggregate:
+    - task: publish-s3-creds-staging
+      file: billing-src/publish-s3-creds.yml
+      params:
+        CF_API_URL: {{cf-api-url-staging}}
+        CF_USERNAME: {{cf-username-staging}}
+        CF_PASSWORD: {{cf-password-staging}}
+        CF_ORG: {{cf-org-staging}}
+        CF_SPACE: {{cf-space-staging}}
+        S3_USER: {{s3-user-staging}}
+        S3_BUCKET: {{s3-bucket-staging}}
+        CF_UPS_NAME: {{cf-ups-name-staging}}
+    - task: publish-s3-creds-production
+      file: billing-src/publish-s3-creds.yml
+      params:
+        CF_API_URL: {{cf-api-url-production}}
+        CF_USERNAME: {{cf-username-production}}
+        CF_PASSWORD: {{cf-password-production}}
+        CF_ORG: {{cf-org-production}}
+        CF_SPACE: {{cf-space-production}}
+        S3_USER: {{s3-user-production}}
+        S3_BUCKET: {{s3-bucket-production}}
+        CF_UPS_NAME: {{cf-ups-name-production}}
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: FAILED to update billing UPS
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: {{slack-channel}}
+      username: {{slack-username}}
+      icon_url: {{slack-icon-url}}
+
 resources:
 - name: diego-schedule
   type: cron-resource
@@ -179,6 +217,13 @@ resources:
     bucket: {{s3-bucket-production}}
     region_name: {{aws-region-production}}
     regexp: diego-(.*).json
+
+- name: terraform-yaml
+  type: s3-iam
+  source:
+    bucket: {{tf-state-bucket-tooling}}
+    versioned_file: {{tf-state-file-tooling}}
+    region_name: {{aws-region-production}}
 
 resource_types:
 - name: cron-resource
