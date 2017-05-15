@@ -9,6 +9,8 @@ import elasticsearch
 import elasticsearch.helpers
 import marshmallow as ma
 
+from utils import Encoder
+
 
 class Config(ma.Schema):
     es_uri = ma.fields.Str(load_from='ES_URI', required=True)
@@ -109,13 +111,6 @@ def get_bulk_docs(res, date):
         doc.update({metric: org[metric]['value'] for metric in metrics})
         logging.info(doc)
         yield doc
-
-
-class Encoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, datetime.date):
-            return obj.isoformat()
-        return json.JSONEncoder.default(self, obj)
 
 
 if __name__ == '__main__':

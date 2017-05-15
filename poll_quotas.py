@@ -8,25 +8,37 @@ import requests
 import elasticsearch
 import elasticsearch.helpers
 from requests_oauthlib import OAuth2Session
+import marshmallow as ma
 
 logging.basicConfig(level=logging.INFO)
 
+max_int = 2 ** 31 - 1
 
-def get_session():
-    info = requests.get('{}/v2/info'.format(os.environ['CF_API_URL']))
+
+class Config(ma.Schema):
+    es_uri = ma.fields.Str(load_from='ES_URI', required=True)
+    poll_index = ma.fields.Str(load_from='POLL_QUOTA_INDEX', required=True)
+    poll_doc_type = ma.fields.Str(load_from='POLL_DOC_TYPE', required=True)
+    cf_api_url = ma.fields.Str(load_from='CF_API_URL', required=True)
+    cf_client_id = ma.fields.Str(load_from='CF_CLIENT_ID', required=True)
+    cf_client_secret = ma.fields.Str(load_from='CF_CLIENT_SECRET', required=True)
+
+
+def get_session(api_url, client_id, client_secret):
+    info = requests.get('{}/v2/info'.format(api_url))
     info.raise_for_status()
 
     token = requests.post(
         '{}/oauth/token'.format(info.json()['token_endpoint']),
-        auth=(os.environ['CF_CLIENT_ID'], os.environ['CF_CLIENT_SECRET']),
+        auth=(client_id, client_secret),
         data={'grant_type': 'client_credentials', 'response_type': 'token'},
     )
     token.raise_for_status()
 
-    return OAuth2Session(os.getenv('CLIENT_ID'), token=token.json())
+    return OAuth2Session(client_id, token=token.json())
 
 
-def emit_quotas(session, client, index, doc_type):
+def poll_quotas(session, client, poll_index, doc_type):
     now = datetime.datetime.now()
     orgs = {
         org['entity']['quota_definition_guid']: org
@@ -38,17 +50,18 @@ def emit_quotas(session, client, index, doc_type):
     }
     elasticsearch.helpers.bulk(
         client,
-        get_bulk_docs(orgs, quotas, now),
-        index=index,
+        get_poll_docs(orgs, quotas, now),
+        index=poll_index,
         doc_type=doc_type,
     )
 
 
-def get_bulk_docs(orgs, quotas, now):
+def get_poll_docs(orgs, quotas, now):
     for quota_guid, org in orgs.items():
         quota = quotas[quota_guid]
         doc = {
-            '_id': '{}-{}'.format(
+            '_id': '{}-{}-{}'.format(
+                org['metadata']['guid'],
                 quota['metadata']['guid'],
                 now.strftime('%Y-%m-%dT%H:%M'),
             ),
@@ -76,9 +89,22 @@ def fetch(session, url):
 
 
 if __name__ == '__main__':
-    emit_quotas(
-        get_session(),
-        elasticsearch.Elasticsearch([os.environ['ES_URI']]),
-        os.environ['QUOTA_INDEX'],
-        os.environ['DOC_TYPE'],
+    config, errors = Config().load(os.environ)
+    if errors:
+        print("The following environment variables must be set correctly to continue:")
+
+        for what, err in errors.items():
+            print("\t{0}: {1}".format(what, " ".join(err)))
+
+        raise SystemExit(99)
+
+    client = elasticsearch.Elasticsearch([config['es_uri']])
+    session = get_session(
+        config['cf_api_url'], config['cf_client_id'], config['cf_client_secret'])
+
+    poll_quotas(
+        session,
+        client,
+        config['poll_index'],
+        config['poll_doc_type'],
     )

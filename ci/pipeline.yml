@@ -36,26 +36,27 @@ jobs:
       username: {{slack-username}}
       icon_url: {{slack-icon-url}}
 
-- name: run-quotas-staging
+- name: poll-quotas-staging
   plan:
   - aggregate:
-    - get: quotas-schedule
+    - get: poll-quotas-schedule
       trigger: true
     - get: billing-src
   - task: run-quotas
     file: billing-src/quotas.yml
     params:
+      ACTION: poll
       ES_URI: {{es-uri-staging}}
       CF_API_URL: {{cf-api-url-staging}}
       CF_CLIENT_ID: {{cf-client-id-staging}}
       CF_CLIENT_SECRET: {{cf-client-secret-staging}}
-      QUOTA_INDEX: {{quotas-index-staging}}
-      DOC_TYPE: {{doc-type-staging}}
+      POLL_QUOTA_INDEX: {{poll-quotas-index-staging}}
+      POLL_DOC_TYPE: {{poll-doc-type-staging}}
   on_failure:
     put: slack
     params:
       text: |
-        :x: FAILED to run quotas billing on staging
+        :x: FAILED to poll quotas on staging
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       channel: {{slack-channel}}
       username: {{slack-username}}
@@ -64,7 +65,42 @@ jobs:
     put: slack
     params:
       text: |
-        :x: Ran quotas billing on staging
+        :x: Polled quotas on staging
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: {{slack-channel}}
+      username: {{slack-username}}
+      icon_url: {{slack-icon-url}}
+
+- name: aggregate-quotas-staging
+  plan:
+  - aggregate:
+    - get: aggregate-quotas-schedule
+      trigger: true
+    - get: billing-src
+  - task: run-quotas
+    file: billing-src/quotas.yml
+    params:
+      ACTION: aggregate
+      ES_URI: {{es-uri-staging}}
+      POLL_QUOTA_INDEX: {{poll-quotas-index-staging}}
+      POLL_DOC_TYPE: {{poll-doc-type-staging}}
+      AGG_QUOTA_INDEX: {{aggregate-quotas-index-staging}}
+      AGG_DOC_TYPE: {{aggregate-doc-type-staging}}
+      OUT_DIR: quotas-json
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: FAILED to aggregate quotas on staging
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: {{slack-channel}}
+      username: {{slack-username}}
+      icon_url: {{slack-icon-url}}
+  on_success:
+    put: slack
+    params:
+      text: |
+        :x: Aggregated quotas on staging
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       channel: {{slack-channel}}
       username: {{slack-username}}
@@ -142,26 +178,27 @@ jobs:
       username: {{slack-username}}
       icon_url: {{slack-icon-url}}
 
-- name: run-quotas-production
+- name: poll-quotas-production
   plan:
   - aggregate:
-    - get: quotas-schedule
+    - get: poll-quotas-schedule
       trigger: true
     - get: billing-src
   - task: run-quotas
     file: billing-src/quotas.yml
     params:
+      ACTION: poll
       ES_URI: {{es-uri-production}}
       CF_API_URL: {{cf-api-url-production}}
       CF_CLIENT_ID: {{cf-client-id-production}}
       CF_CLIENT_SECRET: {{cf-client-secret-production}}
-      QUOTA_INDEX: {{quotas-index-production}}
-      DOC_TYPE: {{doc-type-production}}
+      POLL_QUOTA_INDEX: {{poll-quotas-index-production}}
+      POLL_DOC_TYPE: {{poll-doc-type-production}}
   on_failure:
     put: slack
     params:
       text: |
-        :x: FAILED to run quotas billing on production
+        :x: FAILED to poll quotas on production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       channel: {{slack-channel}}
       username: {{slack-username}}
@@ -170,7 +207,42 @@ jobs:
     put: slack
     params:
       text: |
-        :x: Ran quotas billing on production
+        :x: Polled quotas on production
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: {{slack-channel}}
+      username: {{slack-username}}
+      icon_url: {{slack-icon-url}}
+
+- name: aggregate-quotas-production
+  plan:
+  - aggregate:
+    - get: aggregate-quotas-schedule
+      trigger: true
+    - get: billing-src
+  - task: run-quotas
+    file: billing-src/quotas.yml
+    params:
+      ACTION: aggregate
+      ES_URI: {{es-uri-production}}
+      POLL_QUOTA_INDEX: {{poll-quotas-index-production}}
+      POLL_DOC_TYPE: {{poll-doc-type-production}}
+      AGG_QUOTA_INDEX: {{aggregate-quotas-index-production}}
+      AGG_DOC_TYPE: {{aggregate-doc-type-production}}
+      OUT_DIR: quotas-json
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: FAILED to aggregate quotas on production
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: {{slack-channel}}
+      username: {{slack-username}}
+      icon_url: {{slack-icon-url}}
+  on_success:
+    put: slack
+    params:
+      text: |
+        :x: Aggregated quotas on production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       channel: {{slack-channel}}
       username: {{slack-username}}
@@ -261,11 +333,17 @@ resources:
     expression: {{diego-test-schedule-expression}}
     location: {{diego-test-schedule-location}}
 
-- name: quotas-schedule
+- name: poll-quotas-schedule
   type: cron-resource
   source:
-    expression: {{quotas-schedule-expression}}
-    location: {{quotas-schedule-location}}
+    expression: {{poll-quotas-schedule-expression}}
+    location: {{poll-quotas-schedule-location}}
+
+- name: aggregate-quotas-schedule
+  type: cron-resource
+  source:
+    expression: {{aggregate-quotas-schedule-expression}}
+    location: {{aggregate-quotas-schedule-location}}
 
 - name: billing-src
   type: git
