@@ -4,13 +4,11 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: python
-    tag: "3.6"
+    repository: 18fgsa/concourse-task
 
 inputs:
 - name: billing-src
-outputs:
-- name: diego-json
+- name: terraform-yaml
 
 run:
-  path: billing-src/diego.sh
+  path: billing-src/publish-s3-creds.sh

@@ -3,15 +3,20 @@ jobs:
 - name: run-billing-diego-staging
   plan:
   - aggregate:
+    - get: billing-src
+      trigger: true
     - get: diego-schedule
       trigger: true
-    - get: billing-src
   - task: run-billing-diego
     file: billing-src/diego.yml
     params:
       ES_URI: {{es-uri-staging}}
       BILL_INDEX: {{bill-index-staging}}
       DOC_TYPE: {{doc-type-staging}}
+      OUT_DIR: diego-json
+  - put: diego-json-staging
+    params:
+      file: diego-json/diego-*.json
   on_failure:
     put: slack
     params:
@@ -68,6 +73,9 @@ jobs:
 - name: test-billing-diego-staging
   plan:
   - get: billing-src
+    passed: [run-billing-diego-staging]
+    trigger: true
+  - get: diego-test-schedule
     trigger: true
   - task: test-diego
     file: billing-src/test-diego.yml
@@ -99,16 +107,22 @@ jobs:
 - name: run-billing-diego-production
   plan:
   - aggregate:
+    - get: billing-src
+      passed: [test-billing-diego-staging]
+      trigger: true
     - get: diego-schedule
       passed: [run-billing-diego-staging]
       trigger: true
-    - get: billing-src
   - task: run-billing-diego
     file: billing-src/diego.yml
     params:
       ES_URI: {{es-uri-production}}
       BILL_INDEX: {{bill-index-production}}
       DOC_TYPE: {{doc-type-production}}
+      OUT_DIR: diego-json
+  - put: diego-json-production
+    params:
+      file: diego-json/diego-*.json
   on_failure:
     put: slack
     params:
@@ -165,6 +179,9 @@ jobs:
 - name: test-billing-diego-production
   plan:
   - get: billing-src
+    passed: [run-billing-diego-production]
+    trigger: true
+  - get: diego-test-schedule
     trigger: true
   - task: test-diego
     file: billing-src/test-diego.yml
@@ -193,12 +210,56 @@ jobs:
       username: {{slack-username}}
       icon_url: {{slack-icon-url}}
 
+- name: publish-s3-creds
+  plan:
+  - get: billing-src
+  - get: terraform-yaml
+    trigger: true
+  - aggregate:
+    - task: publish-s3-creds-staging
+      file: billing-src/publish-s3-creds.yml
+      params:
+        CF_API_URL: {{cf-api-url-staging}}
+        CF_USERNAME: {{cf-username-staging}}
+        CF_PASSWORD: {{cf-password-staging}}
+        CF_ORG: {{cf-org-staging}}
+        CF_SPACE: {{cf-space-staging}}
+        S3_USER: {{s3-user-staging}}
+        S3_BUCKET: {{s3-bucket-staging}}
+        CF_UPS_NAME: {{cf-ups-name-staging}}
+    - task: publish-s3-creds-production
+      file: billing-src/publish-s3-creds.yml
+      params:
+        CF_API_URL: {{cf-api-url-production}}
+        CF_USERNAME: {{cf-username-production}}
+        CF_PASSWORD: {{cf-password-production}}
+        CF_ORG: {{cf-org-production}}
+        CF_SPACE: {{cf-space-production}}
+        S3_USER: {{s3-user-production}}
+        S3_BUCKET: {{s3-bucket-production}}
+        CF_UPS_NAME: {{cf-ups-name-production}}
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: FAILED to update billing UPS
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: {{slack-channel}}
+      username: {{slack-username}}
+      icon_url: {{slack-icon-url}}
+
 resources:
 - name: diego-schedule
   type: cron-resource
   source:
     expression: {{diego-schedule-expression}}
     location: {{diego-schedule-location}}
+
+- name: diego-test-schedule
+  type: cron-resource
+  source:
+    expression: {{diego-test-schedule-expression}}
+    location: {{diego-test-schedule-location}}
 
 - name: quotas-schedule
   type: cron-resource
@@ -217,6 +278,29 @@ resources:
   source:
     url: {{slack-webhook-url}}
 
+- name: diego-json-staging
+  type: s3-iam
+  source:
+    bucket: {{s3-bucket-staging}}
+    region_name: {{aws-region-staging}}
+    regexp: diego-(.*).json
+    server_side_encryption: AES256
+
+- name: diego-json-production
+  type: s3-iam
+  source:
+    bucket: {{s3-bucket-production}}
+    region_name: {{aws-region-production}}
+    regexp: diego-(.*).json
+    server_side_encryption: AES256
+
+- name: terraform-yaml
+  type: s3-iam
+  source:
+    bucket: {{tf-state-bucket-tooling}}
+    versioned_file: {{tf-state-file-tooling}}
+    region_name: {{aws-region-production}}
+
 resource_types:
 - name: cron-resource
   type: docker-image
@@ -227,3 +311,8 @@ resource_types:
   type: docker-image
   source:
     repository: cfcommunity/slack-notification-resource
+
+- name: s3-iam
+  type: docker-image
+  source:
+    repository: 18fgsa/s3-resource
