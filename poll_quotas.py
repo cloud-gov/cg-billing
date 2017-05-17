@@ -41,7 +41,7 @@ def get_session(api_url, client_id, client_secret):
 def poll_quotas(session, client, poll_index, doc_type):
     now = datetime.datetime.now()
     orgs = {
-        org['entity']['quota_definition_guid']: org
+        org['metadata']['guid']: org
         for org in fetch(session, '/v2/organizations')
     }
     quotas = {
@@ -57,7 +57,8 @@ def poll_quotas(session, client, poll_index, doc_type):
 
 
 def get_poll_docs(orgs, quotas, now):
-    for quota_guid, org in orgs.items():
+    for org in orgs.values():
+        quota_guid = org['entity']['quota_definition_guid']
         quota = quotas[quota_guid]
         doc = {
             '_id': '{}-{}-{}'.format(
