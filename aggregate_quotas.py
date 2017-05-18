@@ -66,8 +66,8 @@ def get_aggregate_query(date):
                 'terms': {'field': 'org_id.keyword', 'size': max_int},
                 'aggs': {
                     'memory_limit': {'sum': {'field': 'memory_limit'}},
-                    'quota_ids': {'terms': {'field': 'quota_id'}},
-                    'org_names': {'terms': {'field': 'org_name'}},
+                    'quota_ids': {'terms': {'field': 'quota_id.keyword'}},
+                    'org_names': {'terms': {'field': 'org_name.keyword'}},
                 },
             },
         },

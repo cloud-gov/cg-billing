@@ -9,6 +9,8 @@ image_resource:
 
 inputs:
 - name: billing-src
+outputs:
+- name: quotas-json
 
 run:
   path: billing-src/quotas.sh

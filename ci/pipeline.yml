@@ -87,6 +87,9 @@ jobs:
       AGG_QUOTA_INDEX: {{aggregate-quotas-index-staging}}
       AGG_DOC_TYPE: {{aggregate-doc-type-staging}}
       OUT_DIR: quotas-json
+  - put: quotas-json-staging
+    params:
+      file: quotas-json/quotas-*.json
   on_failure:
     put: slack
     params:
@@ -229,6 +232,9 @@ jobs:
       AGG_QUOTA_INDEX: {{aggregate-quotas-index-production}}
       AGG_DOC_TYPE: {{aggregate-doc-type-production}}
       OUT_DIR: quotas-json
+  - put: quotas-json-production
+    params:
+      file: quotas-json/quotas-*.json
   on_failure:
     put: slack
     params:
@@ -370,6 +376,22 @@ resources:
     bucket: {{s3-bucket-production}}
     region_name: {{aws-region-production}}
     regexp: diego-(.*).json
+    server_side_encryption: AES256
+
+- name: quotas-json-staging
+  type: s3-iam
+  source:
+    bucket: {{s3-bucket-staging}}
+    region_name: {{aws-region-staging}}
+    regexp: quotas-(.*).json
+    server_side_encryption: AES256
+
+- name: quotas-json-production
+  type: s3-iam
+  source:
+    bucket: {{s3-bucket-production}}
+    region_name: {{aws-region-production}}
+    regexp: quotas-(.*).json
     server_side_encryption: AES256
 
 - name: terraform-yaml
