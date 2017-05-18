@@ -7,7 +7,7 @@ import datetime
 
 import elasticsearch
 import elasticsearch.helpers
-from dateutil import relativedelta
+from dateutil.relativedelta import relativedelta
 import marshmallow as ma
 
 from utils import Encoder
@@ -22,7 +22,7 @@ class Config(ma.Schema):
     date = ma.fields.DateTime(
         load_from='DATE',
         format="%Y-%m",
-        missing=datetime.datetime.now().strftime('%Y-%m'),
+        missing=(datetime.datetime.now() - relativedelta(months=1)).strftime('%Y-%m'),
     )
     poll_index = ma.fields.Str(load_from='POLL_QUOTA_INDEX', required=True)
     poll_doc_type = ma.fields.Str(load_from='POLL_DOC_TYPE', required=True)
@@ -49,7 +49,7 @@ def aggregate_quotas(client, date, poll_index, agg_index, doc_type, out_dir):
 
 def get_aggregate_query(date):
     gte = date.replace(day=1)
-    lt = gte + relativedelta.relativedelta(months=1)
+    lt = gte + relativedelta(months=1)
 
     return {
         'size': 0,

@@ -7,6 +7,7 @@ import datetime
 
 import elasticsearch
 import elasticsearch.helpers
+from dateutil.relativedelta import relativedelta
 import marshmallow as ma
 
 from utils import Encoder
@@ -17,7 +18,7 @@ class Config(ma.Schema):
     date = ma.fields.DateTime(
         load_from='DATE',
         format="%Y-%m",
-        missing=datetime.datetime.now().strftime('%Y-%m'),
+        missing=(datetime.datetime.now() - relativedelta(months=1)).strftime('%Y-%m'),
     )
     bill_index = ma.fields.Str(load_from='BILL_INDEX', required=True)
     doc_type = ma.fields.Str(load_from='DOC_TYPE', required=True)

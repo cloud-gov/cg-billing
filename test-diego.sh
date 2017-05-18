@@ -46,7 +46,6 @@ until [ "${elapsed}" -le 0 ]; do
   sleep 60
 done
 
-found=$(echo "${doc}" | jq -r '.found')
 if [[ "${found}" = "false" ]]; then
   echo "Aggregate document with _id ${doc_id} not found"
   exit 1

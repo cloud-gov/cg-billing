@@ -64,7 +64,7 @@ def get_poll_docs(orgs, quotas, now):
             '_id': '{}-{}-{}'.format(
                 org['metadata']['guid'],
                 quota['metadata']['guid'],
-                now.strftime('%Y-%m-%dT%H:%M'),
+                now.strftime('%Y-%m-%dT%H:%M:%S'),
             ),
             '@timestamp': now,
             'org_id': org['metadata']['guid'],
