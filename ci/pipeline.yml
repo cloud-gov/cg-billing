@@ -1,4 +1,33 @@
 ---
+groups:
+- name: all
+  jobs:
+    - poll-quotas-staging
+    - aggregate-quotas-staging
+    - test-billing-quotas-production
+    - poll-quotas-production
+    - aggregate-quotas-production
+    - test-billing-quotas-staging
+    - run-billing-diego-staging
+    - test-billing-diego-staging
+    - run-billing-diego-production
+    - test-billing-diego-production
+    - publish-s3-creds
+- name: usage
+  jobs:
+    - run-billing-diego-staging
+    - test-billing-diego-staging
+    - run-billing-diego-production
+    - test-billing-diego-production
+- name: quota
+  jobs:
+    - poll-quotas-staging
+    - aggregate-quotas-staging
+    - test-billing-quotas-staging
+    - poll-quotas-production
+    - aggregate-quotas-production
+    - test-billing-quotas-production
+
 jobs:
 - name: run-billing-diego-staging
   plan:
@@ -147,6 +176,7 @@ jobs:
   plan:
   - get: billing-src
     trigger: true
+    passed: [poll-quotas-staging, aggregate-quotas-staging]
   - get: quotas-test-schedule
     trigger: true
   - task: test-quotas
@@ -223,6 +253,7 @@ jobs:
     - get: poll-quotas-schedule
       trigger: true
     - get: billing-src
+      passed: [test-billing-quotas-staging]
   - task: run-quotas
     file: billing-src/quotas.yml
     params:
@@ -259,6 +290,7 @@ jobs:
     - get: aggregate-quotas-schedule
       trigger: true
     - get: billing-src
+      passed: [test-billing-quotas-staging]
   - task: run-quotas
     file: billing-src/quotas.yml
     params:
@@ -329,6 +361,7 @@ jobs:
   plan:
   - get: billing-src
     trigger: true
+    passed: [poll-quotas-production, aggregate-quotas-production]
   - get: quotas-test-schedule
     trigger: true
   - task: test-quotas
