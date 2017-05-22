@@ -22,6 +22,13 @@ class Config(ma.Schema):
     cf_api_url = ma.fields.Str(load_from='CF_API_URL', required=True)
     cf_client_id = ma.fields.Str(load_from='CF_CLIENT_ID', required=True)
     cf_client_secret = ma.fields.Str(load_from='CF_CLIENT_SECRET', required=True)
+    # this is only used when testing to inject post-dated data into the index
+    now = ma.fields.DateTime(
+        load_from='TEST_QUOTA_DATE',
+        format="%Y-%m-%d",
+        missing=datetime.datetime.now(),
+    )
+
 
 
 def get_session(api_url, client_id, client_secret):
@@ -38,8 +45,7 @@ def get_session(api_url, client_id, client_secret):
     return OAuth2Session(client_id, token=token.json())
 
 
-def poll_quotas(session, client, poll_index, doc_type):
-    now = datetime.datetime.now()
+def poll_quotas(session, client, poll_index, doc_type, now):
     orgs = {
         org['metadata']['guid']: org
         for org in fetch(session, '/v2/organizations')
@@ -64,7 +70,7 @@ def get_poll_docs(orgs, quotas, now):
             '_id': '{}-{}-{}'.format(
                 org['metadata']['guid'],
                 quota['metadata']['guid'],
-                now.strftime('%Y-%m-%dT%H:%M:%S'),
+                now.strftime('%Y-%m-%d'),
             ),
             '@timestamp': now,
             'org_id': org['metadata']['guid'],
@@ -108,4 +114,5 @@ if __name__ == '__main__':
         client,
         config['poll_index'],
         config['poll_doc_type'],
+        config['now']
     )
