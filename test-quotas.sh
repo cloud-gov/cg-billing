@@ -54,7 +54,7 @@ if [[ "${limit}" -ne 1024 ]]; then
 fi
 
 # Test aggregates
-doc_id="$(date +%Y-%m)-${guid}"
+doc_id="1972-05-${guid}"
 
 elapsed=600
 until [ "${elapsed}" -le 0 ]; do
