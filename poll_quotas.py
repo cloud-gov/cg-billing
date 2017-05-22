@@ -22,11 +22,12 @@ class Config(ma.Schema):
     cf_api_url = ma.fields.Str(load_from='CF_API_URL', required=True)
     cf_client_id = ma.fields.Str(load_from='CF_CLIENT_ID', required=True)
     cf_client_secret = ma.fields.Str(load_from='CF_CLIENT_SECRET', required=True)
+
     # this is only used when testing to inject post-dated data into the index
     now = ma.fields.DateTime(
         load_from='TEST_QUOTA_DATE',
         format="%Y-%m-%d",
-        missing=datetime.datetime.now(),
+        missing=datetime.datetime.now().strftime('%Y-%m-%d'),
     )
 
 
