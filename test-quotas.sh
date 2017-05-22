@@ -19,9 +19,16 @@ cf set-quota "${org}" "${quota}"
 
 guid=$(cf org "${org}" --guid)
 
-POLL_QUOTA_INDEX="${poll_index}" python3 "${billing_path}/poll_quotas.py"
-sleep 5
-POLL_QUOTA_INDEX="${poll_index}" python3 "${billing_path}/poll_quotas.py"
+# emit day at 512M
+TEST_QUOTA_DATE="1972-05-21" POLL_QUOTA_INDEX="${poll_index}" python3 "${billing_path}/poll_quotas.py"
+
+# quota changed, this should overwrite the current date
+cf update-quota "${quota}" -m 1024M
+TEST_QUOTA_DATE="1972-05-21" POLL_QUOTA_INDEX="${poll_index}" python3 "${billing_path}/poll_quotas.py"
+
+# fake some more data for the next day to test aggregates
+TEST_QUOTA_DATE="1972-05-22" POLL_QUOTA_INDEX="${poll_index}" python3 "${billing_path}/poll_quotas.py"
+
 
 # Wait for result
 elapsed=300
@@ -40,9 +47,9 @@ if [[ "${total}" -ne 2 ]]; then
   exit 1
 fi
 
-limit=$(echo "${res}" | jq -r '.hits.hits | .[0]._source.memory_limit')
-if [[ "${limit}" -ne 512 ]]; then
-  echo "Expected 512 limit; got ${limit}"
+limit=$(echo "${res}" | jq -r '.hits.hits[0]._source.memory_limit')
+if [[ "${limit}" -ne 1024 ]]; then
+  echo "Expected 1024 limit; got ${limit}"
   exit 1
 fi
 
@@ -51,7 +58,7 @@ doc_id="$(date +%Y-%m)-${guid}"
 
 elapsed=600
 until [ "${elapsed}" -le 0 ]; do
-  DATE="$(date +%Y-%m)" POLL_QUOTA_INDEX="${poll_index}" AGG_QUOTA_INDEX="${agg_index}" python3 "${billing_path}/aggregate_quotas.py"
+  DATE="1972-05" POLL_QUOTA_INDEX="${poll_index}" AGG_QUOTA_INDEX="${agg_index}" python3 "${billing_path}/aggregate_quotas.py"
   doc=$(curl "${ES_URI}/${agg_index}/${AGG_DOC_TYPE}/${doc_id}")
   found=$(echo "${doc}" | jq -r '.found')
   if [[ "${found}" = "true" ]]; then
@@ -67,7 +74,7 @@ if [[ "${found}" = "false" ]]; then
 fi
 
 observed=$(echo "${doc}" | jq -r '._source.memory_limit')
-expected="1024"
+expected="2048"
 if [[ "${observed}" -ne "${expected}" ]]; then
   echo "Expected aggregate value ${expected}; got ${observed}"
   exit 1
