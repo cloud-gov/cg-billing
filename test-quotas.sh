@@ -83,5 +83,5 @@ fi
 # Cleanup
 cf delete-org -f "${org}"
 cf delete-quota -f "${quota}"
-curl -X DELETE "${ES_URI}/${poll_index}"
-curl -X DELETE "${ES_URI}/${agg_index}"
+#curl -X DELETE "${ES_URI}/${poll_index}"
+#curl -X DELETE "${ES_URI}/${agg_index}"
