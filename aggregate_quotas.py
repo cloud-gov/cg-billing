@@ -32,7 +32,7 @@ class Config(ma.Schema):
     out_dir = ma.fields.Str(load_from='OUT_DIR', missing=os.getcwd())
 
 
-def aggregate_quotas(client, date, poll_index, agg_index, doc_type, out_dir):
+def aggregate_quotas(client, date, poll_index, agg_index, doc_type, poll_doc_type, out_dir):
     res = client.search(index=poll_index, body=get_aggregate_query(date))
     docs = list(get_aggregate_docs(res, date))
 
@@ -44,7 +44,7 @@ def aggregate_quotas(client, date, poll_index, agg_index, doc_type, out_dir):
                 for x in range(1, monthrange(date.year, date.month)[1]+1)
             ]},
             index=poll_index,
-            doc_type=doc_type
+            doc_type=poll_doc_type
         )['docs']
 
     elasticsearch.helpers.bulk(
@@ -117,5 +117,6 @@ if __name__ == '__main__':
         config['poll_index'],
         config['aggregate_index'],
         config['aggregate_doc_type'],
+        config['poll_doc_type'],
         config['out_dir'],
     )
