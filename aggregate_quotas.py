@@ -109,7 +109,7 @@ if __name__ == '__main__':
 
         raise SystemExit(99)
 
-    client = elasticsearch.Elasticsearch([config['es_uri']])
+    client = elasticsearch.Elasticsearch([config['es_uri']], timeout=60)
 
     aggregate_quotas(
         client,
