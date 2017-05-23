@@ -39,13 +39,13 @@ def aggregate_quotas(client, date, poll_index, agg_index, doc_type, out_dir):
     # for each aggregate result, append the details used to generate that as the record
     for doc in docs:
         doc['daily_detail'] = client.mget(
-            body=[
+            body={"ids":[
                 "{0}-{1}-{2:02d}-{3:02d}".format(doc['org_id'], date.year, date.month, x)
                 for x in range(1, monthrange(date.year, date.month)[1]+1)
-            ],
+            ]},
             index=poll_index,
             doc_type=doc_type
-        )
+        )['docs']
 
     elasticsearch.helpers.bulk(
         client,
@@ -109,7 +109,7 @@ if __name__ == '__main__':
 
         raise SystemExit(99)
 
-    client = elasticsearch.Elasticsearch([config['es_uri']], timeout=60)
+    client = elasticsearch.Elasticsearch([config['es_uri']])
 
     aggregate_quotas(
         client,
