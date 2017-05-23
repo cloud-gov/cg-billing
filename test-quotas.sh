@@ -80,8 +80,23 @@ if [[ "${observed}" -ne "${expected}" ]]; then
   exit 1
 fi
 
+observed=$(echo "${doc}" | jq -r '._source.daily_detail | length')
+expected="31" # number of days in may, our test month
+if [[ "${observed}" -ne "${expected}" ]]; then
+  echo "Expected ${expected} days of detail; got ${observed}"
+  exit 1
+fi
+
+observed=$(echo "${doc}" | jq -r '[._source.daily_detail[] | select(.found)] | length')
+expected="2" # number of days in may, with actual data
+if [[ "${observed}" -ne "${expected}" ]]; then
+  echo "Expected ${expected} days of valid data in detail; got ${observed}"
+  exit 1
+fi
+
+
 # Cleanup
 cf delete-org -f "${org}"
 cf delete-quota -f "${quota}"
-#curl -X DELETE "${ES_URI}/${poll_index}"
-#curl -X DELETE "${ES_URI}/${agg_index}"
+curl -X DELETE "${ES_URI}/${poll_index}"
+curl -X DELETE "${ES_URI}/${agg_index}"
