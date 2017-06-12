@@ -2,31 +2,31 @@
 groups:
 - name: all
   jobs:
-    - poll-quotas-staging
-    - aggregate-quotas-staging
-    - test-billing-quotas-production
-    - poll-quotas-production
-    - aggregate-quotas-production
-    - test-billing-quotas-staging
-    - run-billing-diego-staging
-    - test-billing-diego-staging
-    - run-billing-diego-production
-    - test-billing-diego-production
-    - publish-s3-creds
+  - poll-quotas-staging
+  - aggregate-quotas-staging
+  - test-billing-quotas-production
+  - poll-quotas-production
+  - aggregate-quotas-production
+  - test-billing-quotas-staging
+  - run-billing-diego-staging
+  - test-billing-diego-staging
+  - run-billing-diego-production
+  - test-billing-diego-production
+  - publish-s3-creds
 - name: usage
   jobs:
-    - run-billing-diego-staging
-    - test-billing-diego-staging
-    - run-billing-diego-production
-    - test-billing-diego-production
+  - run-billing-diego-staging
+  - test-billing-diego-staging
+  - run-billing-diego-production
+  - test-billing-diego-production
 - name: quota
   jobs:
-    - poll-quotas-staging
-    - aggregate-quotas-staging
-    - test-billing-quotas-staging
-    - poll-quotas-production
-    - aggregate-quotas-production
-    - test-billing-quotas-production
+  - poll-quotas-staging
+  - aggregate-quotas-staging
+  - test-billing-quotas-staging
+  - poll-quotas-production
+  - aggregate-quotas-production
+  - test-billing-quotas-production
 
 jobs:
 - name: run-billing-diego-staging
