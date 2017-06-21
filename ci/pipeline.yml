@@ -59,7 +59,7 @@ jobs:
     put: slack
     params:
       text: |
-        :x: Ran diego billing on staging
+        :white_check_mark: Ran diego billing on staging
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       channel: {{slack-channel}}
       username: {{slack-username}}
@@ -94,7 +94,7 @@ jobs:
     put: slack
     params:
       text: |
-        :x: Polled quotas on staging
+        :white_check_mark: Polled quotas on staging
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       channel: {{slack-channel}}
       username: {{slack-username}}
@@ -132,7 +132,7 @@ jobs:
     put: slack
     params:
       text: |
-        :x: Aggregated quotas on staging
+        :white_check_mark: Aggregated quotas on staging
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       channel: {{slack-channel}}
       username: {{slack-username}}
@@ -166,7 +166,7 @@ jobs:
     put: slack
     params:
       text: |
-        :x: Verified diego billing on staging
+        :white_check_mark: Verified diego billing on staging
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       channel: {{slack-channel}}
       username: {{slack-username}}
@@ -203,7 +203,7 @@ jobs:
     put: slack
     params:
       text: |
-        :x: Verified quotas billing on staging
+        :white_check_mark: Verified quotas billing on staging
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       channel: {{slack-channel}}
       username: {{slack-username}}
@@ -241,7 +241,7 @@ jobs:
     put: slack
     params:
       text: |
-        :x: Ran diego billing on production
+        :white_check_mark: Ran diego billing on production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       channel: {{slack-channel}}
       username: {{slack-username}}
@@ -278,7 +278,7 @@ jobs:
     put: slack
     params:
       text: |
-        :x: Polled quotas on production
+        :white_check_mark: Polled quotas on production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       channel: {{slack-channel}}
       username: {{slack-username}}
@@ -317,7 +317,7 @@ jobs:
     put: slack
     params:
       text: |
-        :x: Aggregated quotas on production
+        :white_check_mark: Aggregated quotas on production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       channel: {{slack-channel}}
       username: {{slack-username}}
@@ -351,7 +351,7 @@ jobs:
     put: slack
     params:
       text: |
-        :x: Verified diego billing on production
+        :white_check_mark: Verified diego billing on production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       channel: {{slack-channel}}
       username: {{slack-username}}
@@ -388,7 +388,7 @@ jobs:
     put: slack
     params:
       text: |
-        :x: Verified quotas billing on production
+        :white_check_mark: Verified quotas billing on production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       channel: {{slack-channel}}
       username: {{slack-username}}
