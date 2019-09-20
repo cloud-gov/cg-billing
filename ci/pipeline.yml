@@ -31,7 +31,7 @@ groups:
 jobs:
 - name: run-billing-diego-staging
   plan:
-  - aggregate:
+  - in_parallel:
     - get: billing-src
       trigger: true
     - get: diego-schedule
@@ -67,7 +67,7 @@ jobs:
 
 - name: poll-quotas-staging
   plan:
-  - aggregate:
+  - in_parallel:
     - get: poll-quotas-schedule
       trigger: true
     - get: billing-src
@@ -102,7 +102,7 @@ jobs:
 
 - name: aggregate-quotas-staging
   plan:
-  - aggregate:
+  - in_parallel:
     - get: aggregate-quotas-schedule
       trigger: true
     - get: billing-src
@@ -211,7 +211,7 @@ jobs:
 
 - name: run-billing-diego-production
   plan:
-  - aggregate:
+  - in_parallel:
     - get: billing-src
       passed: [test-billing-diego-staging]
       trigger: true
@@ -249,7 +249,7 @@ jobs:
 
 - name: poll-quotas-production
   plan:
-  - aggregate:
+  - in_parallel:
     - get: poll-quotas-schedule
       trigger: true
     - get: billing-src
@@ -286,7 +286,7 @@ jobs:
 
 - name: aggregate-quotas-production
   plan:
-  - aggregate:
+  - in_parallel:
     - get: aggregate-quotas-schedule
       trigger: true
     - get: billing-src
@@ -399,7 +399,7 @@ jobs:
   - get: billing-src
   - get: terraform-yaml
     trigger: true
-  - aggregate:
+  - in_parallel:
     - task: publish-s3-creds-staging
       file: billing-src/publish-s3-creds.yml
       params:
