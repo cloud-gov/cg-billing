@@ -39,9 +39,9 @@ jobs:
   - task: run-billing-diego
     file: billing-src/diego.yml
     params:
-      ES_URI: {{es-uri-staging}}
-      BILL_INDEX: {{bill-index-staging}}
-      DOC_TYPE: {{doc-type-staging}}
+      ES_URI: ((es-uri-staging))
+      BILL_INDEX: ((bill-index-staging))
+      DOC_TYPE: ((doc-type-staging))
       OUT_DIR: diego-json
   - put: diego-json-staging
     params:
@@ -52,18 +52,18 @@ jobs:
       text: |
         :x: FAILED to run diego billing on staging
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
   on_success:
     put: slack
     params:
       text: |
         :white_check_mark: Ran diego billing on staging
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
 
 - name: poll-quotas-staging
   plan:
@@ -75,30 +75,30 @@ jobs:
     file: billing-src/quotas.yml
     params:
       ACTION: poll
-      ES_URI: {{es-uri-staging}}
-      CF_API_URL: {{cf-api-url-staging}}
-      CF_CLIENT_ID: {{cf-client-id-staging}}
-      CF_CLIENT_SECRET: {{cf-client-secret-staging}}
-      POLL_QUOTA_INDEX: {{poll-quotas-index-staging}}
-      POLL_DOC_TYPE: {{poll-doc-type-staging}}
+      ES_URI: ((es-uri-staging))
+      CF_API_URL: ((cf-api-url-staging))
+      CF_CLIENT_ID: ((cf-client-id-staging))
+      CF_CLIENT_SECRET: ((cf-client-secret-staging))
+      POLL_QUOTA_INDEX: ((poll-quotas-index-staging))
+      POLL_DOC_TYPE: ((poll-doc-type-staging))
   on_failure:
     put: slack
     params:
       text: |
         :x: FAILED to poll quotas on staging
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
   on_success:
     put: slack
     params:
       text: |
         :white_check_mark: Polled quotas on staging
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
 
 - name: aggregate-quotas-staging
   plan:
@@ -110,11 +110,11 @@ jobs:
     file: billing-src/quotas.yml
     params:
       ACTION: aggregate
-      ES_URI: {{es-uri-staging}}
-      POLL_QUOTA_INDEX: {{poll-quotas-index-staging}}
-      POLL_DOC_TYPE: {{poll-doc-type-staging}}
-      AGG_QUOTA_INDEX: {{aggregate-quotas-index-staging}}
-      AGG_DOC_TYPE: {{aggregate-doc-type-staging}}
+      ES_URI: ((es-uri-staging))
+      POLL_QUOTA_INDEX: ((poll-quotas-index-staging))
+      POLL_DOC_TYPE: ((poll-doc-type-staging))
+      AGG_QUOTA_INDEX: ((aggregate-quotas-index-staging))
+      AGG_DOC_TYPE: ((aggregate-doc-type-staging))
       OUT_DIR: quotas-json
   - put: quotas-json-staging
     params:
@@ -125,18 +125,18 @@ jobs:
       text: |
         :x: FAILED to aggregate quotas on staging
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
   on_success:
     put: slack
     params:
       text: |
         :white_check_mark: Aggregated quotas on staging
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
 
 - name: test-billing-diego-staging
   plan:
@@ -148,29 +148,29 @@ jobs:
   - task: test-diego
     file: billing-src/test-diego.yml
     params:
-      ES_URI: {{es-uri-staging}}
-      DOC_TYPE: {{doc-type-staging}}
-      CF_API_URL: {{cf-api-url-staging}}
-      CF_USERNAME: {{cf-username-staging}}
-      CF_PASSWORD: {{cf-password-staging}}
+      ES_URI: ((es-uri-staging))
+      DOC_TYPE: ((doc-type-staging))
+      CF_API_URL: ((cf-api-url-staging))
+      CF_USERNAME: ((cf-username-staging))
+      CF_PASSWORD: ((cf-password-staging))
   on_failure:
     put: slack
     params:
       text: |
         :x: FAILED to verify diego billing on staging
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
   on_success:
     put: slack
     params:
       text: |
         :white_check_mark: Verified diego billing on staging
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
 
 - name: test-billing-quotas-staging
   plan:
@@ -182,32 +182,32 @@ jobs:
   - task: test-quotas
     file: billing-src/test-quotas.yml
     params:
-      ES_URI: {{es-uri-staging}}
-      POLL_DOC_TYPE: {{poll-doc-type-staging}}
-      AGG_DOC_TYPE: {{aggregate-doc-type-staging}}
-      CF_API_URL: {{cf-api-url-staging}}
-      CF_USERNAME: {{cf-username-staging}}
-      CF_PASSWORD: {{cf-password-staging}}
-      CF_CLIENT_ID: {{cf-client-id-staging}}
-      CF_CLIENT_SECRET: {{cf-client-secret-staging}}
+      ES_URI: ((es-uri-staging))
+      POLL_DOC_TYPE: ((poll-doc-type-staging))
+      AGG_DOC_TYPE: ((aggregate-doc-type-staging))
+      CF_API_URL: ((cf-api-url-staging))
+      CF_USERNAME: ((cf-username-staging))
+      CF_PASSWORD: ((cf-password-staging))
+      CF_CLIENT_ID: ((cf-client-id-staging))
+      CF_CLIENT_SECRET: ((cf-client-secret-staging))
   on_failure:
     put: slack
     params:
       text: |
         :x: FAILED to verify quotas billing on staging
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
   on_success:
     put: slack
     params:
       text: |
         :white_check_mark: Verified quotas billing on staging
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
 
 - name: run-billing-diego-production
   plan:
@@ -221,9 +221,9 @@ jobs:
   - task: run-billing-diego
     file: billing-src/diego.yml
     params:
-      ES_URI: {{es-uri-production}}
-      BILL_INDEX: {{bill-index-production}}
-      DOC_TYPE: {{doc-type-production}}
+      ES_URI: ((es-uri-production))
+      BILL_INDEX: ((bill-index-production))
+      DOC_TYPE: ((doc-type-production))
       OUT_DIR: diego-json
   - put: diego-json-production
     params:
@@ -234,18 +234,18 @@ jobs:
       text: |
         :x: FAILED to run diego billing on production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
   on_success:
     put: slack
     params:
       text: |
         :white_check_mark: Ran diego billing on production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
 
 - name: poll-quotas-production
   plan:
@@ -258,31 +258,31 @@ jobs:
     file: billing-src/quotas.yml
     params:
       ACTION: poll
-      ES_URI: {{es-uri-production}}
-      CF_API_URL: {{cf-api-url-production}}
-      CF_CLIENT_ID: {{cf-client-id-production}}
-      CF_CLIENT_SECRET: {{cf-client-secret-production}}
-      POLL_QUOTA_INDEX: {{poll-quotas-index-production}}
-      POLL_DOC_TYPE: {{poll-doc-type-production}}
-      AGG_DOC_TYPE: {{aggregate-doc-type-production}}
+      ES_URI: ((es-uri-production))
+      CF_API_URL: ((cf-api-url-production))
+      CF_CLIENT_ID: ((cf-client-id-production))
+      CF_CLIENT_SECRET: ((cf-client-secret-production))
+      POLL_QUOTA_INDEX: ((poll-quotas-index-production))
+      POLL_DOC_TYPE: ((poll-doc-type-production))
+      AGG_DOC_TYPE: ((aggregate-doc-type-production))
   on_failure:
     put: slack
     params:
       text: |
         :x: FAILED to poll quotas on production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
   on_success:
     put: slack
     params:
       text: |
         :white_check_mark: Polled quotas on production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
 
 - name: aggregate-quotas-production
   plan:
@@ -295,11 +295,11 @@ jobs:
     file: billing-src/quotas.yml
     params:
       ACTION: aggregate
-      ES_URI: {{es-uri-production}}
-      POLL_QUOTA_INDEX: {{poll-quotas-index-production}}
-      POLL_DOC_TYPE: {{poll-doc-type-production}}
-      AGG_QUOTA_INDEX: {{aggregate-quotas-index-production}}
-      AGG_DOC_TYPE: {{aggregate-doc-type-production}}
+      ES_URI: ((es-uri-production))
+      POLL_QUOTA_INDEX: ((poll-quotas-index-production))
+      POLL_DOC_TYPE: ((poll-doc-type-production))
+      AGG_QUOTA_INDEX: ((aggregate-quotas-index-production))
+      AGG_DOC_TYPE: ((aggregate-doc-type-production))
       OUT_DIR: quotas-json
   - put: quotas-json-production
     params:
@@ -310,18 +310,18 @@ jobs:
       text: |
         :x: FAILED to aggregate quotas on production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
   on_success:
     put: slack
     params:
       text: |
         :white_check_mark: Aggregated quotas on production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
 
 - name: test-billing-diego-production
   plan:
@@ -333,29 +333,29 @@ jobs:
   - task: test-diego
     file: billing-src/test-diego.yml
     params:
-      ES_URI: {{es-uri-production}}
-      DOC_TYPE: {{doc-type-production}}
-      CF_API_URL: {{cf-api-url-production}}
-      CF_USERNAME: {{cf-username-production}}
-      CF_PASSWORD: {{cf-password-production}}
+      ES_URI: ((es-uri-production))
+      DOC_TYPE: ((doc-type-production))
+      CF_API_URL: ((cf-api-url-production))
+      CF_USERNAME: ((cf-username-production))
+      CF_PASSWORD: ((cf-password-production))
   on_failure:
     put: slack
     params:
       text: |
         :x: FAILED to verify diego billing on production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
   on_success:
     put: slack
     params:
       text: |
         :white_check_mark: Verified diego billing on production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
 
 - name: test-billing-quotas-production
   plan:
@@ -367,32 +367,32 @@ jobs:
   - task: test-quotas
     file: billing-src/test-quotas.yml
     params:
-      ES_URI: {{es-uri-production}}
-      POLL_DOC_TYPE: {{poll-doc-type-production}}
-      AGG_DOC_TYPE: {{aggregate-doc-type-production}}
-      CF_API_URL: {{cf-api-url-production}}
-      CF_USERNAME: {{cf-username-production}}
-      CF_PASSWORD: {{cf-password-production}}
-      CF_CLIENT_ID: {{cf-client-id-production}}
-      CF_CLIENT_SECRET: {{cf-client-secret-production}}
+      ES_URI: ((es-uri-production))
+      POLL_DOC_TYPE: ((poll-doc-type-production))
+      AGG_DOC_TYPE: ((aggregate-doc-type-production))
+      CF_API_URL: ((cf-api-url-production))
+      CF_USERNAME: ((cf-username-production))
+      CF_PASSWORD: ((cf-password-production))
+      CF_CLIENT_ID: ((cf-client-id-production))
+      CF_CLIENT_SECRET: ((cf-client-secret-production))
   on_failure:
     put: slack
     params:
       text: |
         :x: FAILED to verify quotas billing on production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
   on_success:
     put: slack
     params:
       text: |
         :white_check_mark: Verified quotas billing on production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
 
 - name: publish-s3-creds
   plan:
@@ -403,115 +403,115 @@ jobs:
     - task: publish-s3-creds-staging
       file: billing-src/publish-s3-creds.yml
       params:
-        CF_API_URL: {{cf-api-url-staging}}
-        CF_USERNAME: {{cf-username-staging}}
-        CF_PASSWORD: {{cf-password-staging}}
-        CF_ORG: {{cf-org-staging}}
-        CF_SPACE: {{cf-space-staging}}
-        S3_USER: {{s3-user-staging}}
-        S3_BUCKET: {{s3-bucket-staging}}
-        CF_UPS_NAME: {{cf-ups-name-staging}}
+        CF_API_URL: ((cf-api-url-staging))
+        CF_USERNAME: ((cf-username-staging))
+        CF_PASSWORD: ((cf-password-staging))
+        CF_ORG: ((cf-org-staging))
+        CF_SPACE: ((cf-space-staging))
+        S3_USER: ((s3-user-staging))
+        S3_BUCKET: ((s3-bucket-staging))
+        CF_UPS_NAME: ((cf-ups-name-staging))
     - task: publish-s3-creds-production
       file: billing-src/publish-s3-creds.yml
       params:
-        CF_API_URL: {{cf-api-url-production}}
-        CF_USERNAME: {{cf-username-production}}
-        CF_PASSWORD: {{cf-password-production}}
-        CF_ORG: {{cf-org-production}}
-        CF_SPACE: {{cf-space-production}}
-        S3_USER: {{s3-user-production}}
-        S3_BUCKET: {{s3-bucket-production}}
-        CF_UPS_NAME: {{cf-ups-name-production}}
+        CF_API_URL: ((cf-api-url-production))
+        CF_USERNAME: ((cf-username-production))
+        CF_PASSWORD: ((cf-password-production))
+        CF_ORG: ((cf-org-production))
+        CF_SPACE: ((cf-space-production))
+        S3_USER: ((s3-user-production))
+        S3_BUCKET: ((s3-bucket-production))
+        CF_UPS_NAME: ((cf-ups-name-production))
   on_failure:
     put: slack
     params:
       text: |
         :x: FAILED to update billing UPS
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
 
 resources:
 - name: diego-schedule
   type: cron-resource
   source:
-    expression: {{diego-schedule-expression}}
-    location: {{diego-schedule-location}}
+    expression: ((diego-schedule-expression))
+    location: ((diego-schedule-location))
 
 - name: diego-test-schedule
   type: cron-resource
   source:
-    expression: {{diego-test-schedule-expression}}
-    location: {{diego-test-schedule-location}}
+    expression: ((diego-test-schedule-expression))
+    location: ((diego-test-schedule-location))
 
 - name: quotas-test-schedule
   type: cron-resource
   source:
-    expression: {{quotas-test-schedule-expression}}
-    location: {{quotas-test-schedule-location}}
+    expression: ((quotas-test-schedule-expression))
+    location: ((quotas-test-schedule-location))
 
 - name: poll-quotas-schedule
   type: cron-resource
   source:
-    expression: {{poll-quotas-schedule-expression}}
-    location: {{poll-quotas-schedule-location}}
+    expression: ((poll-quotas-schedule-expression))
+    location: ((poll-quotas-schedule-location))
 
 - name: aggregate-quotas-schedule
   type: cron-resource
   source:
-    expression: {{aggregate-quotas-schedule-expression}}
-    location: {{aggregate-quotas-schedule-location}}
+    expression: ((aggregate-quotas-schedule-expression))
+    location: ((aggregate-quotas-schedule-location))
 
 - name: billing-src
   type: git
   source:
-    uri: {{billing-git-url}}
-    branch: {{billing-git-branch}}
+    uri: ((billing-git-url))
+    branch: ((billing-git-branch))
 
 - name: slack
   type: slack-notification
   source:
-    url: {{slack-webhook-url}}
+    url: ((slack-webhook-url))
 
 - name: diego-json-staging
   type: s3-iam
   source:
-    bucket: {{s3-bucket-staging}}
-    region_name: {{aws-region-staging}}
+    bucket: ((s3-bucket-staging))
+    region_name: ((aws-region-staging))
     regexp: diego-(.*).json
     server_side_encryption: AES256
 
 - name: diego-json-production
   type: s3-iam
   source:
-    bucket: {{s3-bucket-production}}
-    region_name: {{aws-region-production}}
+    bucket: ((s3-bucket-production))
+    region_name: ((aws-region-production))
     regexp: diego-(.*).json
     server_side_encryption: AES256
 
 - name: quotas-json-staging
   type: s3-iam
   source:
-    bucket: {{s3-bucket-staging}}
-    region_name: {{aws-region-staging}}
+    bucket: ((s3-bucket-staging))
+    region_name: ((aws-region-staging))
     regexp: quotas-(.*).json
     server_side_encryption: AES256
 
 - name: quotas-json-production
   type: s3-iam
   source:
-    bucket: {{s3-bucket-production}}
-    region_name: {{aws-region-production}}
+    bucket: ((s3-bucket-production))
+    region_name: ((aws-region-production))
     regexp: quotas-(.*).json
     server_side_encryption: AES256
 
 - name: terraform-yaml
   type: s3-iam
   source:
-    bucket: {{tf-state-bucket-tooling}}
-    versioned_file: {{tf-state-file-tooling}}
-    region_name: {{aws-region-production}}
+    bucket: ((tf-state-bucket-tooling))
+    versioned_file: ((tf-state-file-tooling))
+    region_name: ((aws-region-production))
 
 resource_types:
 - name: cron-resource
